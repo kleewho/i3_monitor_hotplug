@@ -12,8 +12,6 @@ def move_workspaces_from_disabled_outputs()
   }
 end
 
-
-
 def workspaces()
   JSON.parse(i3_workspaces)
 end
@@ -43,10 +41,20 @@ def i3_workspaces()
   i3_msg 'get_workspaces'
 end
 
+def get_current_workspace()
+  workspaces.select{ |ws| ws['focused'] }.first['name']
+end
+
+def preserve_current(workspace, command)
+  current_workspace = get_current_workspace
+  i3_set_current workspace
+  command.call
+  i3_set_current current_workspace
+end
+
 def move_workspace_to_output(workspace, output)
-  i3_set_current workspace
-  i3_command "move workspace to output #{output}"
-  i3_set_current workspace
+  preserve_current(workspace,
+                   lambda{i3_command "move workspace to output #{output}"})
 end
 
 def init()
