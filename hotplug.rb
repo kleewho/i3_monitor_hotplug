@@ -45,16 +45,20 @@ def get_current_workspace()
   workspaces.select{ |ws| ws['focused'] }.first['name']
 end
 
-def preserve_current(workspace, command)
+def preserve_current(command)
   current_workspace = get_current_workspace
-  i3_set_current workspace
-  command.call
+  result = command.call
   i3_set_current current_workspace
+  result
 end
 
 def move_workspace_to_output(workspace, output)
-  preserve_current(workspace,
-                   lambda{i3_command "move workspace to output #{output}"})
+  preserve_current(lambda{move_workspace_to_output!(workspace, output)})
+end
+
+def move_workspace_to_output!(workspace, output)
+  i3_set_current workspace
+  i3_command "move workspace to output #{output}"
 end
 
 def init()
