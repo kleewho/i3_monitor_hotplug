@@ -2,23 +2,21 @@
 
 require 'json'
 
+def i3_workspaces()
+  JSON.parse(i3_msg 'get_workspaces')
+end
+
 def move_workspaces_from_disabled_outputs()
-  active_outputs = outputs
+  all_outputs = i3_outputs
+  active_outputs = all_outputs.reject {|o| o['active']}
+    .map {|o| o['name']}
+  disabled_outputs = all_outputs.select {|o| o['active']}
+    .map {|o| o['name']}
 
-  workspaces.reject{ |ws|
-    ws['output'] == active_outputs.first['name']
-  }.each{ |ws|
-    move_workspace_to_output(ws, active_outputs.first['name'])
-  }
+  i3_workspaces.select {|ws| disabled_outputs.include? ws['output']}
+    .each {|ws| move_workspace_to_output(ws, active_outputs.first)}
 end
 
-def workspaces()
-  JSON.parse(i3_workspaces)
-end
-
-def outputs()
-  JSON.parse(i3_outputs).reject{|output| output['active'] == false}
-end
 
 def i3_set_current(workspace)
   i3_command "workspace #{workspace}"
@@ -34,18 +32,18 @@ def i3_command(command)
 end
 
 def i3_outputs()
-  i3_msg 'get_outputs'
+  JSON.parse(i3_msg 'get_outputs')
 end
 
 def i3_workspaces()
-  i3_msg 'get_workspaces'
+  JSON.parse(i3_msg 'get_workspaces')
 end
 
 def get_current_workspace()
-  workspaces.select{ |ws| ws['focused'] }.first['name']
+  workspaces.select {|ws| ws['focused']} .first['name']
 end
 
-def preserve_current(command)
+def preserve_current(&command)
   current_workspace = get_current_workspace
   result = command.call
   i3_set_current current_workspace
@@ -53,7 +51,7 @@ def preserve_current(command)
 end
 
 def move_workspace_to_output(workspace, output)
-  preserve_current(lambda{move_workspace_to_output!(workspace, output)})
+  preserve_current {move_workspace_to_output!(workspace, output)}
 end
 
 def move_workspace_to_output!(workspace, output)
