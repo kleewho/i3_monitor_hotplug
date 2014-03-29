@@ -8,11 +8,11 @@ def move_workspaces_from_disabled_outputs()
   workspaces.reject{ |ws|
     ws['output'] == active_outputs.first['name']
   }.each{ |ws|
-    i3_set_current ws['name']
-    puts 'Current workspace set to ' + ws['name']
-    move_workspace_to_output active_outputs.first['name']
+    move_workspace_to_output(ws, active_outputs.first['name'])
   }
 end
+
+
 
 def workspaces()
   JSON.parse(i3_workspaces)
@@ -43,8 +43,10 @@ def i3_workspaces()
   i3_msg 'get_workspaces'
 end
 
-def move_workspace_to_output(output)
+def move_workspace_to_output(workspace, output)
+  i3_set_current workspace
   i3_command "move workspace to output #{output}"
+  i3_set_current workspace
 end
 
 def init()
