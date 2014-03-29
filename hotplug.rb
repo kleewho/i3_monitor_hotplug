@@ -17,6 +17,7 @@ def move_workspaces_from_disabled_outputs()
     .each {|ws| move_workspace_to_output(ws, active_outputs.first)}
 end
 
+#def workspace_on_disabled_output?(workspace, active_outputs)
 
 def i3_set_current(workspace)
   i3_command "workspace #{workspace}"
@@ -59,10 +60,16 @@ def move_workspace_to_output!(workspace, output)
   i3_command "move workspace to output #{output}"
 end
 
-def init()
-  puts "Init"
+def xrandr_connected_monitors()
+  `xrandr -q`.split("\n").select {|l| l.include? ' connected '}
+    .map {|l| l.split().first}
 end
+
+def i3_active_outputs()
+  return i3_outputs.select {|o| o['active']}
+    .map{|o| o['name']}
+end
+
 
 workspaces
 outputs
-init
