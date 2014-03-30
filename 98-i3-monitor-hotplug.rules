@@ -1,0 +1,6 @@
+ACTION=="change"
+SUBSYSTEM=="drm"
+ENV{HOTPLUG}=="1"
+ENV{DISPLAY}=":0"
+ENV{XAUTHORITY}="/home/lukasz/.Xauthority"
+RUN+="/home/lukasz/Dokumenty/Projekty/i3_monitor_hotplug/hotplug.rb"
