@@ -1,6 +1,10 @@
 #!/usr/bin/env ruby
 
 require 'json'
+require 'yaml'
+require 'logger'
+
+$log = Logger.new('/var/log/hotplug_rb.log')
 
 def i3_workspaces()
   JSON.parse(i3_msg 'get_workspaces')
@@ -60,16 +64,51 @@ def move_workspace_to_output!(workspace, output)
   i3_command "move workspace to output #{output}"
 end
 
-def xrandr_connected_monitors()
+def xrandr_outputs()
   `xrandr -q`.split("\n").select {|l| l.include? ' connected '}
     .map {|l| l.split().first}
 end
 
+def xrandr_disconnected_outputs()
+  `xrandr -q`.split("\n").select {|l| l.include? ' disconnected '}
+    .map {|l| l.split().first}
+end
+
 def i3_active_outputs()
-  return i3_outputs.select {|o| o['active']}
+  i3_outputs.select {|o| o['active']}
     .map{|o| o['name']}
 end
 
+def switch_off(outputs)
+  cmd = 'xrandr' + outputs.map{|o| " --output #{o} --off"}.reduce(:+)
+  `#{cmd}`
+end
 
-workspaces
-outputs
+def switch_on(config)
+  cmd = 'xrandr' + config.map do |output|
+    name = output.keys.first
+    ' --output ' + name + output[name]['options'].inject(''){|r, o| r + " --#{o}"}
+  end.reduce(:+)
+  `#{cmd}`
+end
+
+def read_xrandr_config()
+  YAML.load_file('/home/lukasz/Dokumenty/Projekty/i3_monitor_hotplug/xrandr.yaml')
+end
+
+def init()
+  $log.debug 'init'
+  $log.debug 'Running hotplug.rb as ' + `whoami`
+
+  if xrandr_outputs.count > i3_active_outputs.count
+    $log.info 'switching on'
+    switch_on read_xrandr_config['monitors'][2]
+  end
+
+  if xrandr_outputs.count < i3_active_outputs.count
+    $log.info 'switching off'
+    switch_off xrandr_disconnected_outputs
+  end
+end
+
+init

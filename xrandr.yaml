@@ -1,0 +1,14 @@
+---
+monitors:
+  1 :
+    - LVDS1:
+        options:
+          - auto
+  2 :
+    - LVDS1:
+        options:
+          - auto
+    - VGA1:
+        options:
+          - right-of LVDS1
+          - auto
