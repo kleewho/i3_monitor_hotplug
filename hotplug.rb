@@ -100,12 +100,15 @@ def init()
   $log.debug 'init'
   $log.debug 'Running hotplug.rb as ' + `whoami`
 
-  if xrandr_outputs.count > i3_active_outputs.count
+  xrandr_outputs_count = xrandr_outputs.count
+  i3_active_outputs_count = i3_active_outputs.count
+  if xrandr_outputs_count > i3_active_outputs_count
+
     $log.info 'switching on'
-    switch_on read_xrandr_config['monitors'][2]
+    switch_on read_xrandr_config['monitors'][xrandr_outputs_count]
   end
 
-  if xrandr_outputs.count < i3_active_outputs.count
+  if xrandr_outputs_count < i3_active_outputs_count
     $log.info 'switching off'
     switch_off xrandr_disconnected_outputs
   end

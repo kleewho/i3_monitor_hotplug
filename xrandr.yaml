@@ -12,3 +12,14 @@ monitors:
         options:
           - right-of LVDS1
           - auto
+  3 :
+    - LVDS1:
+        options:
+          - \off
+    - HDMI2:
+        options:
+          - right-of HDMI3
+          - auto
+    - HDMI3:
+        options:
+          - auto
